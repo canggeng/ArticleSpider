@@ -17,7 +17,7 @@ NEWSPIDER_MODULE = 'ArticleSpider.spiders'
 # USER_AGENT = 'ArticleSpider (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-# 设置不用遵循robot协议
+# 设置不用遵循robot协议，否则爬虫会停止
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
@@ -64,10 +64,20 @@ ROBOTSTXT_OBEY = False
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'ArticleSpider.pipelines.ArticlespiderPipeline': 300,
+    # 'ArticleSpider.pipelines.ArticlespiderPipeline': 300,
     # 下载图片的pipline，后方数字是处理顺序，数字越小处理越早
+    # scrapy默认图片处理pipeline
     # 'scrapy.pipelines.images.ImagesPipeline': 1,
     'ArticleSpider.pipelines.ArticleImagePipeline': 1,
+    # 自定义json保存
+    # 'ArticleSpider.pipelines.JsonWithEncodingPipeline': 2,
+    # scrapy自带的Exporter进行文件保存
+    # 'ArticleSpider.pipelines.JsonExporterPipeline': 3,
+    # 原始的数据库连接保存
+    # 'ArticleSpider.pipelines.MysqlPipeline': 4,
+    # 异步连接池的数据库保存
+    'ArticleSpider.pipelines.MysqlTwistedPipeline': 5,
+
 }
 # 告诉pipeline在item里面的那个字段用来保存要下载图片的url地址
 IMAGES_URLS_FIELD = "front_image_url"
@@ -99,3 +109,9 @@ IMAGES_STORE = os.path.join(project_dir, "images")
 # HTTPCACHE_DIR = 'httpcache'
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+MYSQL_HOST = '124.71.97.56'
+MYSQL_DBNAME = 'article_spider'
+MYSQL_USER = 'root'
+MYSQL_PASSWORD = '9012345'
+MYSQL_PORT = 3316
