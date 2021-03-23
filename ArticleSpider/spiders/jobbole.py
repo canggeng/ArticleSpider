@@ -23,14 +23,14 @@ class JobboleSpider(scrapy.Spider):
             # Rquest()可以用meta={}字典项response中传递参数
             yield scrapy.Request(url=parse.urljoin(response.url, post_url), meta={'front_image_url': image_url},
                                  callback=self.parse_detail)
-            break
+
         # 2.提取下一页并交给scrapy进行下载
-        # front_next = response.css('.a1')
-        # for i in front_next:
-        #     j = i.css('::text').extract_first()
-        #     if j == '下一页' and i.css('::attr(href)').extract_first() != 'javascript:;':
-        #         next_url = i.css('::attr(href)').extract_first()
-        #         yield scrapy.Request(url=parse.urljoin(response.url, next_url), callback=self.parse)
+        front_next = response.css('.a1')
+        for i in front_next:
+            j = i.css('::text').extract_first()
+            if j == '下一页' and i.css('::attr(href)').extract_first() != 'javascript:;':
+                next_url = i.css('::attr(href)').extract_first()
+                yield scrapy.Request(url=parse.urljoin(response.url, next_url), callback=self.parse)
 
     def parse_detail(self, response):
         # 提取文章具体字段

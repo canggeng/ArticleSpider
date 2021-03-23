@@ -115,3 +115,5 @@ MYSQL_DBNAME = 'article_spider'
 MYSQL_USER = 'root'
 MYSQL_PASSWORD = '9012345'
 MYSQL_PORT = 3316
+
+CHROMEDRIVER = "C:/Program Files/Google/Chrome/Application/chromedriver.exe"

@@ -5,8 +5,8 @@
 import datetime
 
 import scrapy
+from itemloaders.processors import TakeFirst, MapCompose, Join #连接list各项
 from scrapy.loader import ItemLoader
-from scrapy.loader.processors import MapCompose, TakeFirst, Join #连接list各项
 
 
 class ArticleItemLoader(ItemLoader):

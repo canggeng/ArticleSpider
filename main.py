@@ -11,4 +11,8 @@ import os
 # 获取此文件父目录的路径
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-execute(["scrapy", "crawl", "jobbole"])
+# execute(["scrapy", "crawl", "jobbole"])
+# execute(["scrapy", "genspider", "aiqicha", "aiqicha.baidu.com"])
+# execute(["scrapy", "crawl", "aiqicha"])
+# execute(["scrapy", "genspider", "niaogebiji", "www.niaogebiji.com"])
+execute(["scrapy", "crawl", "niaogebiji"])
