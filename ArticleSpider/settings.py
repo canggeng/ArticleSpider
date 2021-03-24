@@ -116,4 +116,5 @@ MYSQL_USER = 'root'
 MYSQL_PASSWORD = '9012345'
 MYSQL_PORT = 3316
 
-CHROMEDRIVER = "C:/Program Files/Google/Chrome/Application/chromedriver.exe"
+CHROME_DRIVER = "C:/Program Files/Google/Chrome/Application/chromedriver.exe"
+EDGE_DRIVER = "C:/Program Files (x86)/Microsoft/Edge/Application/MicrosoftWebDriver.exe"

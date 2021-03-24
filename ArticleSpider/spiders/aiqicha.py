@@ -15,7 +15,7 @@ class AiqichaSpider(scrapy.Spider):
         pass
 
 settings = get_project_settings()
-chromedriver = settings.get('CHROMEDRIVER')
+chromedriver = settings.get('CHROME_DRIVER')
 def login_blogs(url,name,password):
     # 创建一个driver对象
     driver = webdriver.Chrome(executable_path=chromedriver)
@@ -24,6 +24,8 @@ def login_blogs(url,name,password):
         sleep(1)
         # 找到输入框和密码框，将用户名和密码输入
         # driver.find_element_by_id("LoginName").send_keys(name)
+        # t = driver.find_element_by_link_text('更多 >').click()
+        t = driver.find_element_by_css_selector('.zx-detail-basic-table')
         t = driver.find_element_by_css_selector('.zx-detail-basic-table').text
         t_list = t.split('\n')
         print(t_list)
@@ -39,7 +41,8 @@ def login_blogs(url,name,password):
 
 
 if __name__ == '__main__':
-    url = "https://aiqicha.baidu.com/company_detail_32385292822723"
+    # url = "https://aiqicha.baidu.com/company_detail_32385292822723"
+    url = 'https://bot.sannysoft.com/'
     login_blogs(url,"qwer","1234")
 
 # browser = webdriver.Chrome(executable_path=chromedriver)

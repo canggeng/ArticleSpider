@@ -39,4 +39,4 @@ class NiaogebijiSpider(scrapy.Spider):
         result = json.loads(response.text)
         if result['return_code'] == '200' and result['return_msg'] == 'success':
             for url in self.start_urls:
-                yield Request(url, dont_filter=True)
+                yield Request(url, dont_filter=True, headers=self.common_header)
