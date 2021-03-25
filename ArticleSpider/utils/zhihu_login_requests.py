@@ -4,6 +4,7 @@ __author__ = 'zzj'
 
 from time import sleep
 
+import requests
 from scrapy.utils.project import get_project_settings
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
@@ -55,8 +56,12 @@ def login(browser, url):
         # elem.click()
 
         print("开始休眠...")
+
         # 显示等待   选择“首页”选项
         element = WebDriverWait(browser, 15).until(EC.title_contains(u'首页'))
+        return element
+
+
         print("已选择...")
 
     except TimeoutException:
@@ -75,8 +80,27 @@ if __name__ == '__main__':
     options.add_experimental_option('useAutomationExtension', False)
     options.add_argument("--disable-blink-features")
     options.add_argument("--disable-blink-features=AutomationControlled")
+    # options.add_argument('--headless')
 
     browser = webdriver.Chrome(executable_path=settings['CHROME_DRIVER'], options=options)
-    # url = 'https://www.zhihu.com/signin?next=%2F'
-    url = 'https://bot.sannysoft.com/'
-    login(browser, url)
+    url = 'https://www.zhihu.com/signin?next=%2F'
+    # url = 'https://bot.sannysoft.com/'
+    if login(browser, url):
+
+        cookies = browser.get_cookies()
+        url = browser.current_url
+        agent = browser.execute_script("return navigator.userAgent")
+
+        header = {
+            "HOST": "www.zhihu.com",
+            "Referer": "https://www.zhizhu.com",
+            'User-Agent': agent
+        }
+
+        session = requests.session()
+        requests_cookies = {}
+        for cookie in cookies:
+            requests_cookies[cookie['name']] = cookie['value']
+        response = session.get(url, headers=header)
+        print(response.cookies)
+        pass

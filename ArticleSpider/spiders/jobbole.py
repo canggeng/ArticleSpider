@@ -5,7 +5,7 @@ import requests
 import re
 from urllib import parse
 
-from ArticleSpider.items import JobBoleArticleItem, ArticleItemLoader
+from ArticleSpider.items import JobBoleArticleItem, BaseItemLoader
 from ArticleSpider.utils.common import get_md5
 
 
@@ -71,7 +71,7 @@ class JobboleSpider(scrapy.Spider):
         article['content'] = content
         article['tags'] = tags
         '''
-        article_loader = ArticleItemLoader(item=JobBoleArticleItem(), response=response)
+        article_loader = BaseItemLoader(item=JobBoleArticleItem(), response=response)
         article_loader.add_xpath('title', '//div[@class="article-head"]//h1[@class="title"]/text()')
         article_loader.add_xpath('create_date', '//div[@class="article-head"]//div[@class="date"]/span[1]/text()')
         article_loader.add_value('url', response.url)

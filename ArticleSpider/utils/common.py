@@ -35,3 +35,10 @@ def unserilize_date(item):
             except Exception as e2:
                 continue
     return item
+
+
+def css_none_to_empty_str(value):
+    if not value:
+        value = ' '
+
+    return value

@@ -129,12 +129,8 @@ class MysqlTwistedPipeline:
     # 第一个参数cursor是一个adbapi.Transaction，采用cursorclass的类创建
     # 第二个以及以后为runInteraction函数中传递给回调函数的参数
     def do_insert(self, cursor, item):
-        insert_sql = '''
-                    insert into article(url_object_id, title, url, create_date, read_nums, content)
-                    value (%s, %s, %s, %s, %s, %s)
-                '''
-        cursor.execute(insert_sql, (
-            item['url_object_id'], item['title'], item['url'], item['create_date'], item['read_nums'], item['content']))
+        insert_sql, params = item.get_insert_sql()
+        cursor.execute(insert_sql, params)
         # 不需要commit，自动提交
 
 
