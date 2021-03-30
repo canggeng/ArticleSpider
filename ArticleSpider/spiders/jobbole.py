@@ -14,6 +14,9 @@ class JobboleSpider(scrapy.Spider):
     allowed_domains = ['www.jobbole.com']
     start_urls = ['http://www.jobbole.com/keji/']
 
+    # 收集伯乐在线所有404的url以及404页面数
+    handle_httpstatus_list = [404, 304]
+
     def parse(self, response):
         # 1.解析列表页面的所有rul并交给scrapy下载后进行解析
         post_nodes = response.css('#stock-left-graphic .list-item')
@@ -102,3 +105,28 @@ class JobboleSpider(scrapy.Spider):
             read_nums = 0
 
         return read_nums
+
+    def start_requests(self):
+        headers = {
+            "HOST": "www.jobbole.com",
+            "Referer": "http://www.jobbole.com/keji/",
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36 Edg/89.0.774.57',
+            # 'If-Modified-Since': 'Sun, 07 Mar 2021 14:05:58 GMT',
+            # 'Cookie': 'security_session_verify=94565ff4fde0194f151b3e81604db285; srcurl=687474703a2f2f7777772e6a6f62626f6c652e636f6d2f6b656a692f; security_session_mid_verify=3c456f3843f6fe28b5a4a8a9691f1e71; X_CACHE_KEY=980c148482845d5a20fc44f57b55bd9b; Hm_lvt_42a9b1b1d382d464c04bb82b4916af4d=1615203945,1616401150,1616989424; Hm_lpvt_42a9b1b1d382d464c04bb82b4916af4d=1616991504'
+        }
+        raw_cookies = 'security_session_verify=94565ff4fde0194f151b3e81604db285; srcurl=687474703a2f2f7777772e6a6f62626f6c652e636f6d2f6b656a692f; ' \
+                  'security_session_mid_verify=3c456f3843f6fe28b5a4a8a9691f1e71; X_CACHE_KEY=980c148482845d5a20fc44f57b55bd9b; ' \
+                  'Hm_lvt_42a9b1b1d382d464c04bb82b4916af4d=1615203945,1616401150,1616989424; ' \
+                  'Hm_lpvt_42a9b1b1d382d464c04bb82b4916af4d=1616991504'.split(';')
+        cookies = {}
+        for cookie in raw_cookies:
+            matched = re.match(r'(.*)=(.*)', cookie.strip())
+            if matched:
+                name = matched.group(1)
+                value = matched.group(2)
+                cookies[name] = value
+
+
+
+        for url in self.start_urls:
+            yield scrapy.Request(url, dont_filter=True, headers=headers, cookies=cookies)

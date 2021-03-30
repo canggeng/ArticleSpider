@@ -2,11 +2,13 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-
+from fake_useragent import FakeUserAgent
 from scrapy import signals
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
+
+from ArticleSpider.utils.crawl_kuaidaili import GetProxyIP
 
 
 class ArticlespiderSpiderMiddleware:
@@ -101,3 +103,55 @@ class ArticlespiderDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+class RandomUserAgentMiddlware(object):
+    # 随机更换user-agent
+    def __init__(self, crawler):
+        super(RandomUserAgentMiddlware, self).__init__()
+        self.ua = FakeUserAgent()
+        self.ua_type = crawler.settings.get("RANDOM_UA_TYPE", "random")
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(crawler)
+
+    def process_request(self, request, spider):
+        def get_ua():
+            return getattr(self.ua, self.ua_type)
+
+        request.headers.setdefault('User-Agent', get_ua())
+
+
+class RandomProxyMiddleware(object):
+    # 动态设置ip代理
+    def process_request(self, request, spider):
+        request.meta["proxy"] = GetProxyIP.get_random_ip()
+
+
+from selenium import webdriver
+from scrapy.http import HtmlResponse
+
+
+class JSPageMiddleware(object):
+
+    # 通过chrome请求动态网页
+    def process_request(self, request, spider):
+        if spider.name == "jobbole":
+            # browser = webdriver.Chrome(executable_path="D:/Temp/chromedriver.exe")
+            spider.browser.get(request.url)
+            import time
+            time.sleep(3)
+            print("访问:{0}".format(request.url))
+
+            # 返回response后就不会进入downloader中，直接进入引擎
+            return HtmlResponse(url=spider.browser.current_url, body=spider.browser.page_source, encoding="utf-8",
+                                request=request)
+
+# 虚拟界面，在只有命令行的linux中使用
+# from pyvirtualdisplay import Display
+# display = Display(visible=0, size=(800, 600))
+# display.start()
+#
+# browser = webdriver.Chrome()
+# browser.get()

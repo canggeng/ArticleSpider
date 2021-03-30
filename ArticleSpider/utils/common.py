@@ -6,6 +6,12 @@ import datetime
 import hashlib
 import json
 
+import MySQLdb
+from scrapy.utils.project import get_project_settings
+from twisted.enterprise import adbapi
+
+settings = get_project_settings()
+
 
 def get_md5(url):
     # 如果为str就是unicode，需要编码
@@ -42,3 +48,28 @@ def css_none_to_empty_str(value):
         value = ' '
 
     return value
+
+
+def get_mysql_conn():
+    conn = MySQLdb.connect(host=settings['MYSQL_HOST'], user=settings['MYSQL_USER'],
+                           password=settings['MYSQL_PASSWORD'], database=settings['MYSQL_DBNAME'],
+                           port=settings['MYSQL_PORT'], charset="utf8")
+
+    return conn
+
+
+def get_dbpool():
+    dbparams = dict(
+        host=settings['MYSQL_HOST'],
+        db=settings['MYSQL_DBNAME'],
+        user=settings['MYSQL_USER'],
+        passwd=settings['MYSQL_PASSWORD'],
+        port=settings['MYSQL_PORT'],
+        charset='utf8',
+        cursorclass=MySQLdb.cursors.DictCursor,
+        use_unicode=True,
+    )
+    # 异步数据连接池
+    # 第一个参数是要用到的mysql驱动模块
+    dbpool = adbapi.ConnectionPool('MySQLdb', **dbparams)
+    return dbpool

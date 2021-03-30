@@ -18,7 +18,7 @@ from contextlib import suppress
 from twisted.enterprise import adbapi
 
 from ArticleSpider.items import JobBoleArticleItem
-from ArticleSpider.utils.common import serilize_date, unserilize_date
+from ArticleSpider.utils.common import serilize_date, unserilize_date, get_mysql_conn, get_dbpool
 
 
 class ArticlespiderPipeline:
@@ -69,8 +69,7 @@ class MysqlPipeline:
     def __init__(self):
         # port必须是数字不能是字符串，否则报错
         # charset使用utf8，而不是utf-8
-        self.conn = MySQLdb.connect(host='124.71.97.56', user='root', password='9012345', database='article_spider',
-                                    port=3316, charset="utf8")
+        self.conn = get_mysql_conn()
         self.cursor = self.conn.cursor()
 
     def process_item(self, item, spider):
@@ -97,19 +96,7 @@ class MysqlTwistedPipeline:
     @classmethod
     # 被scrapy调用，将整个项目的settings传递进来，在__init__前被调用
     def from_settings(cls, settings):
-        dbparams = dict(
-            host=settings['MYSQL_HOST'],
-            db=settings['MYSQL_DBNAME'],
-            user=settings['MYSQL_USER'],
-            passwd=settings['MYSQL_PASSWORD'],
-            port=settings['MYSQL_PORT'],
-            charset='utf8',
-            cursorclass=MySQLdb.cursors.DictCursor,
-            use_unicode=True,
-        )
-        # 异步数据连接池
-        # 第一个参数是要用到的mysql驱动模块
-        dbpool = adbapi.ConnectionPool('MySQLdb', **dbparams)
+        dbpool = get_dbpool()
 
         return cls(dbpool)
 
