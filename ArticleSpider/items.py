@@ -10,6 +10,11 @@ from w3lib.html import remove_tags
 from itemloaders.processors import TakeFirst, MapCompose, Join  # 连接list各项
 from scrapy.loader import ItemLoader
 
+from ArticleSpider.models.ex_types import ArticleType
+from elasticsearch_dsl.connections import connections
+
+es = connections.create_connection(ArticleType._doc_type.using)
+
 
 def date_convert(value):
     # 将日期的字符串格式改为datetime
@@ -22,6 +27,29 @@ def date_convert(value):
 
 def return_value(value):
     return value
+
+
+# 根据字符串生成搜索建议数组
+def gen_suggests(index, info_tuple):
+    # 为了去重，用set；当对不同field的分词打分后，需要忽略已经打分的结果
+    used_words = set()
+    suggests = []
+    for text, weight in info_tuple:
+        if text:
+            # 调用es的analyze接口分析字符串
+            words = es.indices.analyze(index=index, analyzer="ik_max_word", params={'filter': ["lowercase"]}, body=text)
+            # >1是因为单个词不做考虑
+            anylyzed_words = set([r["token"] for r in words["tokens"] if len(r["token"]) > 1])
+            # set求差集，过滤重复的词
+            new_words = anylyzed_words - used_words
+            used_words = used_words | new_words
+        else:
+            new_words = set()
+        if new_words:
+            # [{"input": [], "weight": 分数}, ...]这是es规定的搜索建议的格式要求
+            suggests.append({"input": list(new_words), "weight": weight})
+
+    return suggests
 
 
 class BaseItemLoader(ItemLoader):
@@ -59,6 +87,29 @@ class JobBoleArticleItem(scrapy.Item):
         params = (
             self['url_object_id'], self['title'], self['url'], self['create_date'], self['read_nums'], self['content'])
         return insert_sql, params
+
+    def save_to_es(self):
+        article = ArticleType()
+        article.title = self['title']
+        article.create_date = self["create_date"]
+        article.url = self["url"]
+        # es的id是保存在meta.id中
+        article.meta.id = self["url_object_id"]
+
+        article.front_image_url = self["front_image_url"]
+        if "front_image_path" in self:
+            article.front_image_path = self["front_image_path"]
+        article.read_nums = self["read_nums"]
+        article.content = remove_tags(self["content"])
+        article.tags = self["tags"]
+
+        article.suggest = gen_suggests(ArticleType._doc_type.index, ((article.title, 10), (article.tags, 7)))
+
+        article.save()
+
+        # redis_cli.incr("jobbole_count")
+
+        return
 
 
 def zhihu_date_convert(value):
@@ -143,11 +194,11 @@ def strip(value):
     return value.strip()
 
 
-
 def handle_jobaddr(value):
     addr_list = value.split('\n')
     addr_list = [addr.strip() for addr in addr_list if addr.strip() != '查看地图']
     return ''.join(addr_list)
+
 
 class LagouJobItem(scrapy.Item):
     # 拉勾网职位信息
@@ -159,10 +210,10 @@ class LagouJobItem(scrapy.Item):
         input_processor=MapCompose(remove_splash, strip),
     )
     work_years = scrapy.Field(
-        input_processor = MapCompose(remove_splash, strip),
+        input_processor=MapCompose(remove_splash, strip),
     )
     degree_need = scrapy.Field(
-        input_processor = MapCompose(remove_splash, strip),
+        input_processor=MapCompose(remove_splash, strip),
     )
     job_type = scrapy.Field()
     publish_time = scrapy.Field()

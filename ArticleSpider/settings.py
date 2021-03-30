@@ -58,7 +58,7 @@ CONCURRENT_REQUESTS_PER_IP = 16
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     'ArticleSpider.middlewares.ArticlespiderDownloaderMiddleware': 543,
-    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': 1 #也可以自定义，模仿写就行了
+    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': 1  # 也可以自定义，模仿写就行了
 }
 
 # Enable or disable extensions
@@ -83,6 +83,7 @@ ITEM_PIPELINES = {
     # 'ArticleSpider.pipelines.MysqlPipeline': 4,
     # 异步连接池的数据库保存
     'ArticleSpider.pipelines.MysqlTwistedPipeline': 5,
+    'ArticleSpider.pipelines.ElasticsearchPipeline': 2,
 
 }
 # 告诉pipeline在item里面的那个字段用来保存要下载图片的url地址

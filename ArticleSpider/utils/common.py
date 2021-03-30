@@ -8,6 +8,7 @@ import json
 
 import MySQLdb
 from scrapy.utils.project import get_project_settings
+from selenium.webdriver.chrome.options import Options
 from twisted.enterprise import adbapi
 
 settings = get_project_settings()
@@ -73,3 +74,16 @@ def get_dbpool():
     # 第一个参数是要用到的mysql驱动模块
     dbpool = adbapi.ConnectionPool('MySQLdb', **dbparams)
     return dbpool
+
+
+def reliable_chrome_options():
+    options = Options()
+    # 隐藏 正在受到自动软件的控制 这几个字
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option('useAutomationExtension', False)
+    # 防止被识别出来使用的selenium
+    options.add_argument("--disable-blink-features")
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    # options.add_argument('--headless')
+
+    return options

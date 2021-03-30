@@ -16,8 +16,10 @@ from scrapy.pipelines.images import ImagesPipeline
 from contextlib import suppress
 
 from twisted.enterprise import adbapi
+from w3lib.html import remove_tags
 
 from ArticleSpider.items import JobBoleArticleItem
+from ArticleSpider.models.ex_types import ArticleType
 from ArticleSpider.utils.common import serilize_date, unserilize_date, get_mysql_conn, get_dbpool
 
 
@@ -107,6 +109,7 @@ class MysqlTwistedPipeline:
         query = self.dbpool.runInteraction(self.do_insert, item)
         # 添加错误处理函数
         query.addErrback(self.handle_error, item, spider)
+        return item
 
     # 除第一个参数外，其他由addErrorback函数传入
     def handle_error(self, failure, item, spider):
@@ -136,3 +139,14 @@ class ArticleImagePipeline(ImagesPipeline):
     #     with suppress(KeyError):
     #         ItemAdapter(item)[self.images_result_field] = [x for ok, x in results if ok]
     #     return item
+
+
+class ElasticsearchPipeline:
+    # 将数据写入到es中
+    def process_item(self, item, spider):
+        # 将item转换为es数据
+        # elasticsearch-dsl-py是python的接口包，在github上；安装用pip install elasticsearch-dsl
+        if isinstance(item, JobBoleArticleItem):
+            item.save_to_es()
+
+        return item

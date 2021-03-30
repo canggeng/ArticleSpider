@@ -11,7 +11,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from ArticleSpider.items import ZhihuQuestionItem, BaseItemLoader, ZhihuAnswerItem
-from ArticleSpider.utils.common import css_none_to_empty_str
+from ArticleSpider.utils.common import css_none_to_empty_str, reliable_chrome_options
 
 
 def login(browser, url):
@@ -167,20 +167,9 @@ class ZhihuSpider(scrapy.Spider):
         for url in self.start_urls:
             yield Request(url, dont_filter=True, headers=self.header, cookies=self.requests_cookies)
 
-    def is_index(self, response):
-        title = response.css('title').extract()
-        print(title)
 
     def login(self):
-        options = Options()
-        # 隐藏 正在受到自动软件的控制 这几个字
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option('useAutomationExtension', False)
-        # 防止被识别出来使用的selenium
-        options.add_argument("--disable-blink-features")
-        options.add_argument("--disable-blink-features=AutomationControlled")
-        # options.add_argument('--headless')
-
+        options = reliable_chrome_options()
         browser = webdriver.Chrome(executable_path=self.settings.get('CHROME_DRIVER'), options=options)
         url = 'https://www.zhihu.com/signin?next=%2F'
         # url = 'https://bot.sannysoft.com/'
