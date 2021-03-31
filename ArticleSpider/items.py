@@ -5,6 +5,7 @@
 import datetime
 import re
 
+import redis
 import scrapy
 from w3lib.html import remove_tags
 from itemloaders.processors import TakeFirst, MapCompose, Join  # 连接list各项
@@ -14,7 +15,7 @@ from ArticleSpider.models.ex_types import ArticleType
 from elasticsearch_dsl.connections import connections
 
 es = connections.create_connection(ArticleType._doc_type.using)
-
+redis_cli = redis.StrictRedis()
 
 def date_convert(value):
     # 将日期的字符串格式改为datetime
@@ -106,8 +107,8 @@ class JobBoleArticleItem(scrapy.Item):
         article.suggest = gen_suggests(ArticleType._doc_type.index, ((article.title, 10), (article.tags, 7)))
 
         article.save()
-
-        # redis_cli.incr("jobbole_count")
+        # 记录爬取数量到redis，以供前端显示
+        redis_cli.incr("jobbole_count")
 
         return
 

@@ -6,6 +6,8 @@ import requests
 import re
 from urllib import parse
 
+from pydispatch import dispatcher
+from scrapy import signals
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
@@ -21,8 +23,19 @@ class JobboleSpider(scrapy.Spider):
     # 收集伯乐在线所有404的url以及404页面数
     handle_httpstatus_list = [404, 304]
 
+    def __init__(self, **kwargs):
+        self.fail_urls = []
+        dispatcher.connect(self.handle_spider_closed, signals.spider_closed)
+
+    def handle_spider_closed(self, spider, reason):
+        self.crawler.stats.set_value("failed_urls", ",".join(self.fail_urls))
+
     def parse(self, response):
         # 1.解析列表页面的所有rul并交给scrapy下载后进行解析
+        if response.status == 404:
+            self.fail_urls.append(response.url)
+            self.crawler.stats.inc_value("failed_url")
+
         post_nodes = response.css('#stock-left-graphic .list-item')
         for post_node in post_nodes:
             image_url = post_node.css('img ::attr(src)').extract_first('')
@@ -151,3 +164,7 @@ class JobboleSpider(scrapy.Spider):
             print("Time Out")
         except NoSuchElementException:
             print("No Element")
+
+
+if __name__ == '__main__':
+    print(b'\xe6\xaf\x94\xe7\x89\xb9'.decode('utf-8'))
